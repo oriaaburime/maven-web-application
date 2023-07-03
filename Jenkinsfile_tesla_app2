@@ -1,0 +1,49 @@
+Node{
+	def mavenHome = tool name 'maven3.8.6'
+	stage('1clonecode'){
+	git "https://github.com/LandmakTechnology/maven-web-application"
+	}
+}
+
+	stage('2test&Build'){
+	sh ${mavenHome}/bin/mvn clean package
+	// bat ${mavenHome}/bin/mvn clean package
+	}
+}
+
+	stage('3codeQuality'){
+	sh ${mavenHome}/bin/mvn sonar:sonar
+	}
+}
+
+	stage('4deploy2Artifactory'){
+	sh ${mavenHome}/bin/mvn deploy
+	// http://52.53.227.31:8080/landmark/respository/tesla-fe-releases
+	// http://52.53.227.31:8080/landmark/respository/tesla-fe-snapshots
+	// vi into pom.xml and add repository details
+	}
+}
+
+	stage('5deploy2UAT'){
+	sh "echo 'deploy to UAT' "
+	deploy adapters: []
+	}
+}
+
+stage('6approvalGate'){
+	sh "echo 'ready for review' "
+	timeout(time:5, unit: 'DAYS') {
+	input message: 'Application ready for deploy. Please review and approve'
+	}
+}
+
+stage('7deploy2Prod'){
+	deploy adapters: []
+}
+
+stage('8emailNotification'){
+	emailtext body:"" Hi All,
+
+	Check build status
+	}
+}
