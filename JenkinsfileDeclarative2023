@@ -1,0 +1,60 @@
+Pipeline{
+	agent any
+	tools{
+	maven "maven3.8.6"
+	}
+	stages{
+	  stage('1GetCode'){
+	    steps{
+	      sh "echo 'cloning the latest application version' "
+	      git branch: 'feature', credentialsId: 'gitHubCredentials',
+	  }
+	}
+
+	 stage('2test&Build'){
+	   steps{
+	     sh "echo 'running JUnit-test-cases' "
+	     sh "echo 'testing must pass to create artifacts' "
+	     sh "mvn clean package' "
+	  }
+    }
+
+	 stage('3codeQuality'){
+	   steps{
+	     sh "performing code quality analysis' "
+	     sh "mvn sonar:sonar"
+	  }
+    }
+
+	stage('4uploadNexus'){
+	   steps{
+	     sh "mvn deploy"
+	  }
+    }
+
+	stage('5deploy2Prod'){
+	   steps{
+	     deploy adapters: [tomcat9()]
+	  }
+    }
+}
+
+  post{
+	always{
+	  emailext body: '''Hi guys
+  Please check build status.
+  
+  Thanks
+  Landmark
+  +1 437 215 654''', recepientProviders,...
+      { 
+      failure{
+        emailext body: '''Hey guys
+  Build failed, please resolve issues.
+
+  Thanks
+  Landmark
+  +1 437 215 654''', recepientProviders,...
+      }
+    }
+ }
